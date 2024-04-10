@@ -1,0 +1,218 @@
+--  Member table
+CREATE DATABASE carData
+Use carData;
+CREATE TABLE Member (
+    MemberID INT PRIMARY KEY (10),
+    MemberFName VARCHAR(20),
+    MemberLName VARCHAR(20),
+    MemberLoc VARCHAR(20)
+);
+
+INSERT INTO Member (MemberID, MemberFName, MemberLName, MemberLoc)
+VALUES
+    (1, 'Jerry', 'Mcguire', 'New York'),
+    (2, 'John', 'Thibaughts', 'Los Angeles'),
+    (3, 'Izzy', 'Mohammed', 'London'),
+    (4, 'Harry', 'Brown', 'Liverpool'),
+    (5,'Catherine','Gemin','St Peterburg');
+-- Vehicle table
+CREATE TABLE Vehicle (
+    VehicleReg INT PRIMARY KEY (10),
+    VehicleMake VARCHAR(10),
+    VehicleModel VARCHAR(10),
+    MemberID VARCHAR(10),
+    FOREIGN KEY (MemberID) REFERENCES Member(MemberID)
+);
+
+INSERT INTO Vehicle (VehicleReg, VehicleMake, VehicleModel, MemberID)
+VALUES
+    ('BGF452', 'Toyota', ' Hilux', 'M356'),
+    ('JGO666', 'Bentley', 'Continental GT', 'J127'),
+    ('ABJ426', 'Mercedes-Benz', 'EQS Saloon', 'F788')
+    ('GHU472', 'BMW','Sedans','G154'),
+    ('GID593', 'Toyota', 'RAV4', 'I114'),
+    ('ASI128', 'Audi', 'A4', 'G123'),
+    ('AOA823', 'Hiyundai', 'Sonata', 'U494'),
+    ('PVN386', 'Kia', 'Optima', 'L280');
+    
+
+-- Create Engineer table
+CREATE TABLE Engineer (
+    EngineerID INT PRIMARY KEY,
+    EngineerFName VARCHAR(20),
+    EngineerLName VARCHAR(20)
+);
+
+INSERT INTO Engineer( EngineerID, EngineerFName, EngineerLName)
+VALUES
+(1,'Alex', 'Jones'),
+(2,'Alejandro', 'Leiz'),
+(3,'Rajesh', 'Khan');
+
+--  Breakdown table
+CREATE TABLE Breakdown (
+    BreakdownID INT PRIMARY KEY,
+    VehicleReg VARCHAR(10),
+    EngineerID INT,
+    BreakdownDate DATE,
+    BreakdownTime TIME,
+    BreakdownLoc VARCHAR(20),
+    FOREIGN KEY (VehicleReg) REFERENCES Vehicle(VehicleReg),
+    FOREIGN KEY (EngineerID) REFERENCES Engineer(EngineerID)
+);
+
+INSERT INTO Breakdown (BreakdownID, VehicleReg, EngineerID, BreakdownDate, BreakdownTime, BreakdownLoc)
+VALUES
+    (1, 'BGF452', 1, '30-1-2022', '06:40:20', 'New York'),
+    (2, 'JGO666', 2, '20-04-2022', '10:12:22', 'Los Angeles'),
+    (3, 'ABJ426', 2, '15-12-2022', '09:14:40', 'London'),
+    (4, 'GHU472', 3, '28-12-2022', '12:55:32', 'Liverpool'),
+    (5, 'GID593', 1, '01-01-2022', '14:05:30', 'Atlanta'),
+    (6, 'ASI128', 1, '12-02-2022', '16:55:42', 'Mumbai'),
+    (7, 'AOA823', 2, '30-01-2022', '13:20:50', 'Moscow'),
+    (8, 'PVN386', 3, '28-12-2022', '15:40:05', 'Shanghai'),
+    (9, 'GJE324', 1, '29-12-2022', '18:25:59', 'Rome'),
+    (10, 'JFO127', 2, '04-12-2022', '09:58:33', 'Amsterdam'),
+    (11, 'PSA321', 1, '18-05-2022', '10:22:15', 'Sydney'),
+    (12, 'HJJ882', 3, '16-03-2022', '05:27:10', 'Tokyo');
+
+-- Add Foreign Key 
+ALTER TABLE Vehicle
+ADD CONSTRAINT FK_Vehicle_Member
+FOREIGN KEY (MemberID)
+REFERENCES Member(MemberID);
+
+-- Foreign key for Breakdown 
+ALTER TABLE Breakdown
+ADD CONSTRAINT Breakdown_Vehicle
+FOREIGN KEY (VehicleReg)
+REFERENCES Vehicle(VehicleReg);
+
+ALTER TABLE Breakdown
+ADD CONSTRAINT Breakdown_Engineer
+FOREIGN KEY (EngineerID)
+REFERENCES Engineer(EngineerID);
+
+-- QUERY--
+SELECT VehicleReg
+FROM Breakdown
+GROUP BY VehicleReg
+HAVING COUNT(*) > 1;
+
+-- Query Task 3 
+
+SELECT MemberFName, MemberLName
+FROM MEMBER WHERE MemberLoc = 'London';
+
+SELECT * FROM Vehicle WHERE VehicleMake = 'Nissan';
+
+SELECT COUNT(*) FROM Engineer;
+
+SELECT NumMembers COUNT(*) FROM Member;
+
+SELECT * FROM Breakdown
+WHERE BreakdownDate > '2022-01-01';
+
+SELECT * FROM Breakdown
+WHERE BreakdownDate BETWEEN '2022-01-01' AND '2022-12-31';
+
+SELECT NumBreakdowns COUNT(*)  
+FROM Breakdown WHERE VehicleReg = 'BGF452';
+
+SELECT VehicleReg, NumBreakdowns COUNT(*)
+FROM Breakdown HAVING COUNT(*) > 1;
+
+--  Query task 4
+SELECT VehicleReg, VehicleMake, VehicleModel FROM Vehicle
+WHERE MemberID = '1';
+
+-- All the vehicles a member owns e.g Jerry
+SELECT AVG(MemberID) FROM AverageMemberID;
+--  Number of Vehicles sorted Highest to lowest
+SELECT MemberID, COUNT(VehicleReg) AS NumVehicles
+FROM Vehicle
+GROUP BY MemberID
+ORDER BY NumVehicles DESC;
+
+-- Vehicle breakdown in a location with member detail -- 
+
+SELECT VehicleReg, VehicleMake, VehicleModel, MemberFName, MemberLName
+FROM Breakdown
+JOIN VehicleReg = VehicleReg
+JOIN Member ON MemberID = MemberID
+WHERE BreakdownLoc = 'New York';
+-- task 5  
+
+-- Calculate the avertage vakue 
+SELECT AVG(MemberID) FROM AverageMemberID;
+
+-- Retrieve the maximum value -- 
+SELECT MAX(MemberID) FROM MaxMemberID;
+
+-- Retrieve the minimum value -- 
+SELECT MIN(MemberID) FROM MinMemberID;
+
+-- SUM of the value
+SELECT SUM(EngineerID) FROM TotalEngineers; 
+
+-- Task 6
+
+-- Create the stored procedure
+DELIMITER //
+
+CREATE PROCEDURE GetMultiCarPolicy(
+    IN firstName VARCHAR(20),
+    IN lastName VARCHAR(20)
+)
+BEGIN
+    DECLARE numCars INT;
+
+    -- Get the number of cars for the member
+    SELECT COUNT(*) INTO numCars
+    FROM Vehicle
+    WHERE MemberID = (
+        SELECT MemberID
+        FROM Member
+        WHERE MemberFName = firstName AND MemberLName = lastName
+    );
+
+    -- Display multi-car policy if applicable
+    IF numCars > 1 THEN
+        SELECT 'Multi-car policy is applicable';
+    ELSE
+        SELECT 'Multi-car policy is not applicable';
+    END IF;
+    
+END //
+
+DELIMITER ;
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+ 
+
